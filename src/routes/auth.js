@@ -1,6 +1,5 @@
 const express = require('express');
 const router = express.Router();
-const bcrypt = require('bcryptjs');
 
 router.get('/login', (req, res) => {
   if (req.session && req.session.loggedIn) {
@@ -9,11 +8,9 @@ router.get('/login', (req, res) => {
   res.render('login', { error: null });
 });
 
-router.post('/login', async (req, res) => {
+router.post('/login', (req, res) => {
   const { password } = req.body;
   const validPassword = process.env.APP_PASSWORD || 'petoi2024';
-  
-  const isMatch = await bcrypt.compare(password, await bcrypt.hash(validPassword, 10));
   
   if (password === validPassword) {
     req.session.loggedIn = true;
