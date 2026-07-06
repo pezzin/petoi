@@ -1,18 +1,4 @@
 let lastMessageId = 0;
-let currentBg = null;
-
-async function loadBackground() {
-  try {
-    const res = await fetch('/api/background');
-    const data = await res.json();
-    if (data.background !== currentBg) {
-      currentBg = data.background;
-      document.body.className = data.background === 'default' ? '' : `bg-${data.background}`;
-    }
-  } catch (err) {
-    console.error('Errore caricamento sfondo:', err);
-  }
-}
 
 async function loadMessages() {
   try {
@@ -100,11 +86,9 @@ async function loadSensorData() {
   }
 }
 
-loadBackground();
 loadMessages();
 checkStatus();
 loadSensorData();
 
-setInterval(loadBackground, 2000);
 setInterval(loadMessages, 2000);
 setInterval(checkStatus, 30000);

@@ -41,6 +41,10 @@ app.get('/backgrounds', requireAuth, (req, res) => {
   res.render('backgrounds');
 });
 
+app.get('/sfondo', (req, res) => {
+  res.render('sfondo');
+});
+
 app.get('/health', async (req, res) => {
   try {
     await db.query('SELECT 1');

@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>PETOI - Scenografia</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    
+    body {
+      width: 100vw;
+      height: 100vh;
+      overflow: hidden;
+      background: #000;
+    }
+    
+    .background-image {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      transition: opacity 1s ease;
+    }
+    
+    .loading {
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      color: #666;
+      font-family: sans-serif;
+      font-size: 1.5rem;
+    }
+  </style>
+</head>
+<body>
+  <div id="loading" class="loading">Caricamento...</div>
+  <img id="bg-image" class="background-image" style="display: none;">
+  
+  <script>
+    const backgrounds = {
+      'default': '/images/default.jpg',
+      'sea': '/images/sea.jpg',
+      'mountain': '/images/mountain.jpg',
+      'space': '/images/space.jpg'
+    };
+    
+    let currentBg = null;
+    
+    async function loadBackground() {
+      try {
+        const res = await fetch('/api/background');
+        const data = await res.json();
+        
+        if (data.background !== currentBg && backgrounds[data.background]) {
+          currentBg = data.background;
+          const img = document.getElementById('bg-image');
+          img.src = backgrounds[data.background];
+          img.onload = () => {
+            document.getElementById('loading').style.display = 'none';
+            img.style.display = 'block';
+          };
+        }
+      } catch (err) {
+        console.error('Errore:', err);
+      }
+    }
+    
+    loadBackground();
+    setInterval(loadBackground, 2000);
+  </script>
+</body>
+</html>
