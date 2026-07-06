@@ -105,6 +105,6 @@ loadMessages();
 checkStatus();
 loadSensorData();
 
-setInterval(loadBackground, 3000);
+setInterval(loadBackground, 2000);
 setInterval(loadMessages, 2000);
 setInterval(checkStatus, 30000);
