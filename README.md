@@ -89,6 +89,7 @@ Vai su `https://tuo-sito.onrender.com/health` - dovresti vedere:
 | `/login` | Pagina di login |
 | `/` | Dashboard con messaggi |
 | `/backgrounds` | Selettore sfondi |
+| `/sfondo` | Pagina scenografia (fullscreen) |
 | `/health` | Health check |
 
 ---
@@ -152,23 +153,23 @@ curl -X DELETE https://tuo-sito.onrender.com/api/messages
 
 ### Sfondi
 
-Usa questo endpoint per cambiare lo sfondo della dashboard come scenografia durante la demo.
+Usa questo endpoint per cambiare lo sfondo della pagina `/sfondo` come scenografia durante la demo.
 
 #### Cambia sfondo
 
 ```bash
 curl -X POST https://tuo-sito.onrender.com/api/background \
   -H "Content-Type: application/json" \
-  -d '{"background": "space"}'
+  -d '{"background": "piramidi"}'
 ```
 
 **Sfondi disponibili:**
 | Valore | Descrizione |
 |--------|-------------|
-| `default` | Gradiente scuro |
-| `sea` | Oceano blu |
-| `mountain` | Cime nevose |
-| `space` | Cosmo stellato |
+| `dracula` | Tema gotico |
+| `frankestein` | Tema mostruoso |
+| `piramidi` | Tema egizio |
+| `vangogh` | Tema artistico |
 
 #### Leggi sfondo corrente
 
@@ -179,7 +180,7 @@ curl https://tuo-sito.onrender.com/api/background
 **Risposta:**
 ```json
 {
-  "background": "space"
+  "background": "piramidi"
 }
 ```
 
