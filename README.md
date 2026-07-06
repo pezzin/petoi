@@ -1,98 +1,402 @@
 # PETOI Webapp
 
-Webapp per il controllo del robot PETOI durante la Summer School.
+Webapp per la visualizzazione di messaggi dal robot PETOI e controllo della scenografia durante la Summer School.
 
-## Setup
+## Funzionalità
 
-1. Clona il repo
-2. Copia `.env.example` in `.env` e configura le variabili
-3. Installa le dipendenze: `npm install`
-4. Avvia: `npm run dev`
+- **Messaggi dal robot**: Visualizza in tempo reale i messaggi inviati dal robot
+- **Sfondi dinamici**: Cambia lo sfondo della pagina per la scenografia
+- **Autenticazione**: Accesso protetto da password
+- **API REST**: Endpoints per integrare il robot
 
-## Variabili d'ambiente
+---
 
-- `DATABASE_URL` - Connection string PostgreSQL (Render)
-- `SESSION_SECRET` - Segreto per le sessioni
-- `APP_PASSWORD` - Password condivisa per il login
-- `PORT` - Porta del server (default: 3000)
+## Setup Locale
 
-## Struttura
+### Prerequisiti
+- Node.js 18+
+- PostgreSQL (o usa Render)
+
+### Installazione
+
+```bash
+# Clona il repo
+git clone https://github.com/pezzin/petoi.git
+cd petoi
+
+# Installa dipendenze
+npm install
+
+# Copia e configura le variabili d'ambiente
+cp .env.example .env
+```
+
+### Variabili d'ambiente (.env)
 
 ```
-src/
-  app.js           - Entry point
-  config/
-    database.js    - Configurazione PostgreSQL
-  middleware/
-    auth.js        - Middleware autenticazione
-  routes/
-    auth.js        - Route login/logout
-    api.js         - API REST
-views/             - Template EJS
-public/            - CSS, JS, assets
+DATABASE_URL=postgresql://user:password@host:5432/database
+SESSION_SECRET=una-stringa-random-lunga
+APP_PASSWORD=la-tua-password-condivisa
+PORT=3000
 ```
+
+### Avvia
+
+```bash
+npm run dev
+```
+
+Apri http://localhost:3000
+
+---
 
 ## Deploy su Render
 
-1. Crea un nuovo Web Service su Render
-2. Collega il repo GitHub
-3. Build command: `npm install`
-4. Start command: `npm start`
-5. Aggiungi le variabili d'ambiente
+### 1. Crea il database
+
+1. Vai su https://dashboard.render.com
+2. Clicca "New" → "PostgreSQL"
+3. Scegli un nome e la regione
+4. Clicca "Create Database"
+5. Copia l'**Internal Database URL**
+
+### 2. Crea il Web Service
+
+1. Clicca "New" → "Web Service"
+2. Collega il tuo repo GitHub
+3. Configura:
+   - **Build Command**: `npm install`
+   - **Start Command**: `npm start`
+4. Aggiungi le variabili d'ambiente:
+   - `DATABASE_URL` - Internal Database URL del database
+   - `SESSION_SECRET` - Una stringa random (es. `abc123xyz789`)
+   - `APP_PASSWORD` - La password per accedere
+5. Clicca "Create Web Service"
+
+### 3. Verifica
+
+Vai su `https://tuo-sito.onrender.com/health` - dovresti vedere:
+```json
+{"status":"healthy","database":"connected"}
+```
+
+---
+
+## Pagine Web
+
+| Pagina | Descrizione |
+|--------|-------------|
+| `/login` | Pagina di login |
+| `/` | Dashboard con messaggi |
+| `/backgrounds` | Selettore sfondi |
+| `/health` | Health check |
+
+---
 
 ## API Endpoints
 
-### Messaggi (dal robot)
+### Base URL
+```
+https://tuo-sito.onrender.com/api
+```
 
-**Invia un messaggio:**
+---
+
+### Messaggi
+
+#### Invia un messaggio
+
+Il messaggio appare in grande nella dashboard, perfetto per mostrare cosa sta "pensando" il robot.
+
 ```bash
-curl -X POST https://petoi.onrender.com/api/messages \
+curl -X POST https://tuo-sito.onrender.com/api/messages \
   -H "Content-Type: application/json" \
   -d '{"text": "Sto analizzando l ambiente...", "source": "robot"}'
 ```
 
-**Leggi messaggi:**
-```bash
-curl https://petoi.onrender.com/api/messages
-```
-
 **Parametri:**
-- `text` (obbligatorio) - Il messaggio da mostrare
-- `source` (opzionale) - Fonte del messaggio (default: "external")
+| Campo | Tipo | Obbligatorio | Descrizione |
+|-------|------|--------------|-------------|
+| `text` | string | Sì | Il messaggio da mostrare |
+| `source` | string | No | Fonte del messaggio (default: "external") |
 
-**Cancella tutti i messaggi:**
-```bash
-curl -X DELETE https://petoi.onrender.com/api/messages
+**Risposta:**
+```json
+{
+  "id": 1,
+  "text": "Sto analizzando l ambiente...",
+  "source": "robot",
+  "created_at": "2025-07-06T10:30:00.000Z"
+}
 ```
 
-### Dati sensori
+#### Leggi tutti i messaggi
 
-**Invia dato sensore:**
 ```bash
-curl -X POST https://petoi.onrender.com/api/data \
-  -H "Content-Type: application/json" \
-  -d '{"sensor": "ultrasonic", "value": "25.5"}'
+curl https://tuo-sito.onrender.com/api/messages
 ```
 
-### Health check
+#### Cancella un messaggio
+
 ```bash
-curl https://petoi.onrender.com/health
+curl -X DELETE https://tuo-sito.onrender.com/api/messages/1
 ```
 
-### Sfondi (scenografia)
+#### Cancella tutti i messaggi
 
-**Cambia sfondo:**
 ```bash
-curl -X POST https://petoi.onrender.com/api/background \
+curl -X DELETE https://tuo-sito.onrender.com/api/messages
+```
+
+---
+
+### Sfondi
+
+Usa questo endpoint per cambiare lo sfondo della dashboard come scenografia durante la demo.
+
+#### Cambia sfondo
+
+```bash
+curl -X POST https://tuo-sito.onrender.com/api/background \
   -H "Content-Type: application/json" \
   -d '{"background": "space"}'
 ```
 
-**Sfondi disponibili:** `default`, `sea`, `mountain`, `space`
+**Sfondi disponibili:**
+| Valore | Descrizione |
+|--------|-------------|
+| `default` | Gradiente scuro |
+| `sea` | Oceano blu |
+| `mountain` | Cime nevose |
+| `space` | Cosmo stellato |
 
-**Leggi sfondo corrente:**
+#### Leggi sfondo corrente
+
 ```bash
-curl https://petoi.onrender.com/api/background
+curl https://tuo-sito.onrender.com/api/background
 ```
 
-**Pagina sfondi:** `/backgrounds` - Interfaccia visuale per cambiare sfondo
+**Risposta:**
+```json
+{
+  "background": "space"
+}
+```
+
+---
+
+### Dati Sensori
+
+Per salvare e leggere dati dai sensori del robot.
+
+#### Invia dato sensore
+
+```bash
+curl -X POST https://tuo-sito.onrender.com/api/data \
+  -H "Content-Type: application/json" \
+  -d '{"sensor": "ultrasonic", "value": "25.5"}'
+```
+
+#### Leggi dati
+
+```bash
+curl https://tuo-sito.onrender.com/api/data
+```
+
+---
+
+### Health Check
+
+```bash
+curl https://tuo-sito.onrender.com/health
+```
+
+---
+
+## Esempi di Integrazione
+
+### Da Python (es. Raspberry Pi / robot)
+
+```python
+import requests
+
+BASE_URL = "https://tuo-sito.onrender.com"
+
+# Invia messaggio
+requests.post(f"{BASE_URL}/api/messages", json={
+    "text": "Rilevato ostacolo a 30cm",
+    "source": "petoi"
+})
+
+# Cambia sfondo
+requests.post(f"{BASE_URL}/api/background", json={
+    "background": "space"
+})
+```
+
+### Da Node.js
+
+```javascript
+const BASE_URL = "https://tuo-sito.onrender.com";
+
+// Invia messaggio
+await fetch(`${BASE_URL}/api/messages`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+        text: "Sto eseguendo il comando",
+        source: "petoi"
+    })
+});
+```
+
+### Da Arduino / ESP32 (con WiFiClient)
+
+```cpp
+#include <WiFiClient.h>
+#include <ArduinoJson.h>
+
+void sendMessage(String text) {
+  WiFiClient client;
+  if (client.connect("tuo-sito.onrender.com", 80)) {
+    StaticJsonDocument<200> doc;
+    doc["text"] = text;
+    doc["source"] = "petoi";
+    
+    String body;
+    serializeJson(doc, body);
+    
+    client.println("POST /api/messages HTTP/1.1");
+    client.println("Host: tuo-sito.onrender.com");
+    client.println("Content-Type: application/json");
+    client.print("Content-Length: ");
+    client.println(body.length());
+    client.println();
+    client.println(body);
+    client.stop();
+  }
+}
+```
+
+---
+
+## Istruzioni per Altri Team
+
+Per replicare questo sistema:
+
+### Opzione A: Fork del progetto
+
+1. Forka il repo su GitHub
+2. Segui le istruzioni di "Deploy su Render"
+3. Personalizza password e sfondi
+
+### Opzione B: Solo gli endpoint necessari
+
+Se avete già un progetto Node.js, aggiungete:
+
+**1. Tabella database:**
+```sql
+CREATE TABLE messages (
+  id SERIAL PRIMARY KEY,
+  text TEXT NOT NULL,
+  source VARCHAR(100),
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE settings (
+  key VARCHAR(100) PRIMARY KEY,
+  value TEXT
+);
+
+INSERT INTO settings (key, value) VALUES ('background', 'default');
+```
+
+**2. Endpoint minimi:**
+```javascript
+// GET /api/messages
+router.get('/messages', async (req, res) => {
+  const result = await db.query('SELECT * FROM messages ORDER BY created_at DESC LIMIT 50');
+  res.json(result.rows);
+});
+
+// POST /api/messages
+router.post('/messages', async (req, res) => {
+  const { text, source } = req.body;
+  const result = await db.query(
+    'INSERT INTO messages (text, source) VALUES ($1, $2) RETURNING *',
+    [text, source || 'external']
+  );
+  res.json(result.rows[0]);
+});
+
+// POST /api/background
+router.post('/background', async (req, res) => {
+  const { background } = req.body;
+  await db.query(
+    'INSERT INTO settings (key, value) VALUES ($1, $2) ON CONFLICT (key) DO UPDATE SET value = $2',
+    ['background', background]
+  );
+  res.json({ success: true });
+});
+```
+
+---
+
+## Struttura Progetto
+
+```
+petoi/
+├── src/
+│   ├── app.js              # Entry point Express
+│   ├── config/
+│   │   └── database.js     # Connessione PostgreSQL
+│   ├── middleware/
+│   │   └── auth.js         # Autenticazione
+│   └── routes/
+│       ├── auth.js         # Login/logout
+│       └── api.js          # API REST
+├── views/
+│   ├── login.ejs           # Pagina login
+│   ├── dashboard.ejs       # Dashboard
+│   └── backgrounds.ejs     # Selettore sfondi
+├── public/
+│   ├── css/style.css       # Stili
+│   ├── js/app.js           # Frontend logic
+│   └── favicon.svg         # Favicon
+├── .env.example            # Template variabili
+├── package.json
+└── README.md
+```
+
+---
+
+## Troubleshooting
+
+### La sessione non funziona / torna al login
+
+Assicurati che `SESSION_SECRET` sia impostato su Render.
+
+### Il database non si connette
+
+1. Verifica che `DATABASE_URL` sia corretto
+2. Su Render, usa l'**Internal Database URL** (non External)
+3. Controlla `/health` per vedere lo stato
+
+### Gli sfondi non cambiano
+
+La dashboard aggiorna ogni 2 secondi. Assicurati che il valore sia valido: `default`, `sea`, `mountain`, `space`.
+
+---
+
+## Tecnologie
+
+- **Backend**: Node.js, Express.js
+- **Database**: PostgreSQL
+- **Frontend**: EJS, CSS vanilla
+- **Deploy**: Render.com
+
+---
+
+## Licenza
+
+MIT - Free to use for educational purposes.
