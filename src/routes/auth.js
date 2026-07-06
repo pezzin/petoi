@@ -14,7 +14,10 @@ router.post('/login', (req, res) => {
   
   if (password === validPassword) {
     req.session.loggedIn = true;
-    return res.redirect('/');
+    req.session.save(() => {
+      res.redirect('/');
+    });
+    return;
   }
   
   res.render('login', { error: 'Password non corretta' });
