@@ -37,6 +37,10 @@ app.get('/', requireAuth, (req, res) => {
   res.render('dashboard');
 });
 
+app.get('/backgrounds', requireAuth, (req, res) => {
+  res.render('backgrounds');
+});
+
 app.get('/health', async (req, res) => {
   try {
     await db.query('SELECT 1');
@@ -63,6 +67,16 @@ async function initDatabase() {
         source VARCHAR(100),
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
       )
+    `);
+    await db.query(`
+      CREATE TABLE IF NOT EXISTS settings (
+        key VARCHAR(100) PRIMARY KEY,
+        value TEXT
+      )
+    `);
+    await db.query(`
+      INSERT INTO settings (key, value) VALUES ('background', 'default')
+      ON CONFLICT (key) DO NOTHING
     `);
     console.log('Database initialized');
   } catch (err) {

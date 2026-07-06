@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>PETOI - Sfondi</title>
+  <link rel="icon" href="/favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+  <header>
+    <h1>Sfondi Scenografia</h1>
+    <div>
+      <a href="/" class="btn-nav">Dashboard</a>
+      <a href="/auth/logout" class="btn-logout">Logout</a>
+    </div>
+  </header>
+  
+  <main class="backgrounds-grid">
+    <div class="bg-card" data-bg="default" onclick="setBackground('default')">
+      <div class="bg-preview bg-default"></div>
+      <h3>Default</h3>
+      <p>Gradiente scuro</p>
+    </div>
+    
+    <div class="bg-card" data-bg="sea" onclick="setBackground('sea')">
+      <div class="bg-preview bg-sea"></div>
+      <h3>Mare</h3>
+      <p>Oceano blu</p>
+    </div>
+    
+    <div class="bg-card" data-bg="mountain" onclick="setBackground('mountain')">
+      <div class="bg-preview bg-mountain"></div>
+      <h3>Montagna</h3>
+      <p>Cime nevose</p>
+    </div>
+    
+    <div class="bg-card" data-bg="space" onclick="setBackground('space')">
+      <div class="bg-preview bg-space"></div>
+      <h3>Spazio</h3>
+      <p>Cosmo stellato</p>
+    </div>
+  </main>
+  
+  <div id="current-bg" class="current-indicator">
+    Sfondo attuale: <span id="bg-name">Caricamento...</span>
+  </div>
+  
+  <script>
+    let currentBg = 'default';
+    
+    async function loadCurrentBackground() {
+      try {
+        const res = await fetch('/api/background');
+        const data = await res.json();
+        currentBg = data.background;
+        updateIndicator();
+      } catch (err) {
+        console.error('Errore:', err);
+      }
+    }
+    
+    async function setBackground(bg) {
+      try {
+        await fetch('/api/background', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ background: bg })
+        });
+        currentBg = bg;
+        updateIndicator();
+        flashCard(bg);
+      } catch (err) {
+        console.error('Errore:', err);
+      }
+    }
+    
+    function updateIndicator() {
+      const names = {
+        'default': 'Default',
+        'sea': 'Mare',
+        'mountain': 'Montagna',
+        'space': 'Spazio'
+      };
+      document.getElementById('bg-name').textContent = names[currentBg] || currentBg;
+      
+      document.querySelectorAll('.bg-card').forEach(card => {
+        card.classList.toggle('active', card.dataset.bg === currentBg);
+      });
+    }
+    
+    function flashCard(bg) {
+      const card = document.querySelector(`.bg-card[data-bg="${bg}"]`);
+      if (card) {
+        card.style.transform = 'scale(1.05)';
+        setTimeout(() => card.style.transform = '', 200);
+      }
+    }
+    
+    loadCurrentBackground();
+  </script>
+</body>
+</html>

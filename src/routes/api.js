@@ -76,4 +76,32 @@ router.delete('/messages', async (req, res) => {
   }
 });
 
+router.get('/background', async (req, res) => {
+  try {
+    const result = await db.query('SELECT value FROM settings WHERE key = $1', ['background']);
+    res.json({ background: result.rows[0]?.value || 'default' });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+router.post('/background', async (req, res) => {
+  const { background } = req.body;
+  const validBackgrounds = ['default', 'sea', 'mountain', 'space'];
+  
+  if (!validBackgrounds.includes(background)) {
+    return res.status(400).json({ error: 'Invalid background. Use: ' + validBackgrounds.join(', ') });
+  }
+  
+  try {
+    await db.query(
+      'INSERT INTO settings (key, value) VALUES ($1, $2) ON CONFLICT (key) DO UPDATE SET value = $2',
+      ['background', background]
+    );
+    res.json({ success: true, background });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
 module.exports = router;

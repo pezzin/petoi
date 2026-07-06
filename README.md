@@ -78,3 +78,21 @@ curl -X POST https://petoi.onrender.com/api/data \
 ```bash
 curl https://petoi.onrender.com/health
 ```
+
+### Sfondi (scenografia)
+
+**Cambia sfondo:**
+```bash
+curl -X POST https://petoi.onrender.com/api/background \
+  -H "Content-Type: application/json" \
+  -d '{"background": "space"}'
+```
+
+**Sfondi disponibili:** `default`, `sea`, `mountain`, `space`
+
+**Leggi sfondo corrente:**
+```bash
+curl https://petoi.onrender.com/api/background
+```
+
+**Pagina sfondi:** `/backgrounds` - Interfaccia visuale per cambiare sfondo
