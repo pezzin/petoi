@@ -39,3 +39,42 @@ public/            - CSS, JS, assets
 3. Build command: `npm install`
 4. Start command: `npm start`
 5. Aggiungi le variabili d'ambiente
+
+## API Endpoints
+
+### Messaggi (dal robot)
+
+**Invia un messaggio:**
+```bash
+curl -X POST https://petoi.onrender.com/api/messages \
+  -H "Content-Type: application/json" \
+  -d '{"text": "Sto analizzando l ambiente...", "source": "robot"}'
+```
+
+**Leggi messaggi:**
+```bash
+curl https://petoi.onrender.com/api/messages
+```
+
+**Parametri:**
+- `text` (obbligatorio) - Il messaggio da mostrare
+- `source` (opzionale) - Fonte del messaggio (default: "external")
+
+**Cancella tutti i messaggi:**
+```bash
+curl -X DELETE https://petoi.onrender.com/api/messages
+```
+
+### Dati sensori
+
+**Invia dato sensore:**
+```bash
+curl -X POST https://petoi.onrender.com/api/data \
+  -H "Content-Type: application/json" \
+  -d '{"sensor": "ultrasonic", "value": "25.5"}'
+```
+
+### Health check
+```bash
+curl https://petoi.onrender.com/health
+```

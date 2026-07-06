@@ -33,4 +33,47 @@ router.post('/data', async (req, res) => {
   }
 });
 
+router.get('/messages', async (req, res) => {
+  try {
+    const result = await db.query('SELECT * FROM messages ORDER BY created_at DESC LIMIT 50');
+    res.json(result.rows);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+router.post('/messages', async (req, res) => {
+  const { text, source } = req.body;
+  if (!text) {
+    return res.status(400).json({ error: 'text is required' });
+  }
+  try {
+    const result = await db.query(
+      'INSERT INTO messages (text, source) VALUES ($1, $2) RETURNING *',
+      [text, source || 'external']
+    );
+    res.json(result.rows[0]);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+router.delete('/messages/:id', async (req, res) => {
+  try {
+    await db.query('DELETE FROM messages WHERE id = $1', [req.params.id]);
+    res.json({ success: true });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+router.delete('/messages', async (req, res) => {
+  try {
+    await db.query('DELETE FROM messages');
+    res.json({ success: true });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
 module.exports = router;
