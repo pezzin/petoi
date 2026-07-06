@@ -6,6 +6,7 @@ const db = require('./config/database');
 const { requireAuth } = require('./middleware/auth');
 const authRoutes = require('./routes/auth');
 const apiRoutes = require('./routes/api');
+const danceRoutes = require('./routes/dance');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -32,6 +33,7 @@ app.set('views', path.join(__dirname, '../views'));
 
 app.use('/', authRoutes);
 app.use('/api', apiRoutes);
+app.use('/api/dance', danceRoutes);
 
 app.get('/', requireAuth, (req, res) => {
   res.render('dashboard');
@@ -43,6 +45,10 @@ app.get('/backgrounds', requireAuth, (req, res) => {
 
 app.get('/sfondo', (req, res) => {
   res.render('sfondo');
+});
+
+app.get('/dance', requireAuth, (req, res) => {
+  res.render('dance');
 });
 
 app.get('/health', async (req, res) => {
@@ -79,9 +85,34 @@ async function initDatabase() {
       )
     `);
     await db.query(`
+      CREATE TABLE IF NOT EXISTS robots (
+        id VARCHAR(20) PRIMARY KEY,
+        name VARCHAR(100),
+        status VARCHAR(50) DEFAULT 'offline',
+        last_seen TIMESTAMP,
+        current_command TEXT
+      )
+    `);
+    await db.query(`
+      CREATE TABLE IF NOT EXISTS commands (
+        id SERIAL PRIMARY KEY,
+        robot_id VARCHAR(20) REFERENCES robots(id),
+        command VARCHAR(100) NOT NULL,
+        params TEXT,
+        executed BOOLEAN DEFAULT FALSE,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      )
+    `);
+    await db.query(`
       INSERT INTO settings (key, value) VALUES ('background', 'dracula')
       ON CONFLICT (key) DO NOTHING
     `);
+    for (let i = 1; i <= 7; i++) {
+      await db.query(`
+        INSERT INTO robots (id, name, status) VALUES ($1, $2, 'offline')
+        ON CONFLICT (id) DO NOTHING
+      `, [`petoi-${i}`, `PETOI ${i}`]);
+    }
     console.log('Database initialized');
   } catch (err) {
     console.error('Database init error:', err.message);

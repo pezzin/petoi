@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>PETOI - Dance Coordinator</title>
+  <link rel="icon" href="/favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="/css/style.css">
+  <link rel="stylesheet" href="/css/dance.css">
+</head>
+<body>
+  <header>
+    <h1>Dance Coordinator</h1>
+    <div>
+      <a href="/" class="btn-nav">Dashboard</a>
+      <a href="/auth/logout" class="btn-logout">Logout</a>
+    </div>
+  </header>
+  
+  <main class="dance-container">
+    <section class="robots-grid">
+      <h2>Robot Status</h2>
+      <div id="robots-list"></div>
+    </section>
+    
+    <section class="commands-panel">
+      <h2>Send Command</h2>
+      
+      <div class="form-group">
+        <label>Select Robots:</label>
+        <div id="robot-selectors"></div>
+        <button onclick="selectAll()" class="btn-small">Select All</button>
+        <button onclick="selectNone()" class="btn-small">Select None</button>
+      </div>
+      
+      <div class="form-group">
+        <label for="command">Command:</label>
+        <select id="command">
+          <option value="sit">Sit</option>
+          <option value="stand">Stand</option>
+          <option value="walk">Walk Forward</option>
+          <option value="back">Walk Backward</option>
+          <option value="left">Turn Left</option>
+          <option value="right">Turn Right</option>
+          <option value="pushup">Pushup</option>
+          <option value="pee">Pee</option>
+          <option value="stretch">Stretch</option>
+          <option value="greeting">Greeting</option>
+          <option value="check">Check Around</option>
+          <option value="zero">Zero Position</option>
+          <option value="custom">Custom Command</option>
+        </select>
+      </div>
+      
+      <div class="form-group" id="custom-command-group" style="display: none;">
+        <label for="custom-command">Custom Command:</label>
+        <input type="text" id="custom-command" placeholder="e.g. m 0 0 0">
+      </div>
+      
+      <div class="form-group">
+        <label for="params">Params (optional):</label>
+        <input type="text" id="params" placeholder="Additional parameters">
+      </div>
+      
+      <button onclick="sendCommand()" class="btn">Send Command</button>
+      <button onclick="sendToAll()" class="btn btn-secondary">Send to All</button>
+      <button onclick="clearCommands()" class="btn btn-danger">Clear Queue</button>
+    </section>
+    
+    <section class="choreography-panel">
+      <h2>Choreography</h2>
+      
+      <div class="form-group">
+        <label for="choreo-name">Choreography Name:</label>
+        <input type="text" id="choreo-name" placeholder="my-dance">
+      </div>
+      
+      <div class="form-group">
+        <label for="choreo-steps">Steps (JSON):</label>
+        <textarea id="choreo-steps" rows="8" placeholder='[
+  {"robots": ["petoi-1", "petoi-2"], "command": "sit", "delay": 1000},
+  {"robots": "all", "command": "stand", "delay": 2000}
+]'></textarea>
+      </div>
+      
+      <button onclick="saveChoreography()" class="btn">Save Choreography</button>
+      <button onclick="executeChoreography()" class="btn btn-secondary">Execute</button>
+      
+      <h3>Saved Choreographies</h3>
+      <div id="choreo-list"></div>
+    </section>
+  </main>
+  
+  <script src="/js/dance.js"></script>
+</body>
+</html>

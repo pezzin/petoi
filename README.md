@@ -90,6 +90,7 @@ Vai su `https://tuo-sito.onrender.com/health` - dovresti vedere:
 | `/` | Dashboard con messaggi |
 | `/backgrounds` | Selettore sfondi |
 | `/sfondo` | Pagina scenografia (fullscreen) |
+| `/dance` | Coordinatore robot (admin) |
 | `/health` | Health check |
 
 ---
@@ -203,6 +204,83 @@ curl -X POST https://tuo-sito.onrender.com/api/data \
 ```bash
 curl https://tuo-sito.onrender.com/api/data
 ```
+
+---
+
+### Dance Coordinator
+
+Sistema per coordinare fino a 7 robot PETOI tramite coda di comandi.
+
+#### I robot ottengono il prossimo comando
+
+Ogni robot deve interrogare questo endpoint ogni 1-2 secondi:
+
+```bash
+curl https://tuo-sito.onrender.com/api/dance/robot/petoi-1/command
+```
+
+**Risposta (con comando):**
+```json
+{
+  "command": "sit",
+  "params": null,
+  "command_id": 42
+}
+```
+
+**Risposta (senza comandi):**
+```json
+{
+  "command": null
+}
+```
+
+#### Il robot aggiorna il suo stato
+
+```bash
+curl -X POST https://tuo-sito.onrender.com/api/dance/robot/petoi-1/status \
+  -H "Content-Type: application/json" \
+  -d '{"status": "online", "current_command": "executing walk"}'
+```
+
+#### Lista di tutti i robot
+
+```bash
+curl https://tuo-sito.onrender.com/api/dance/robots
+```
+
+#### Invia comando a robot specifici
+
+```bash
+curl -X POST https://tuo-sito.onrender.com/api/dance/command \
+  -H "Content-Type: application/json" \
+  -d '{"robots": ["petoi-1", "petoi-2"], "command": "sit"}'
+```
+
+#### Invia comando a tutti i robot
+
+```bash
+curl -X POST https://tuo-sito.onrender.com/api/dance/command/all \
+  -H "Content-Type: "application/json" \
+  -d '{"command": "stand"}'
+```
+
+**Comandi predefiniti:**
+| Comando | Descrizione |
+|---------|-------------|
+| `sit` | Siediti |
+| `stand` | Alzati |
+| `walk` | Cammina avanti |
+| `back` | Cammina indietro |
+| `left` | Gira a sinistra |
+| `right` | Gira a destra |
+| `pushup` | Flessioni |
+| `pee` | Fa la pipì |
+| `stretch` | Stirati |
+| `greeting` | Saluto |
+| `check` | Guarda intorno |
+| `zero` | Posizione zero |
+| `custom` | Comando personalizzato |
 
 ---
 
