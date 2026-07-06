@@ -9,45 +9,6 @@ body {
   background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
   color: #eee;
   min-height: 100vh;
-  background-size: cover;
-  background-attachment: fixed;
-  transition: background 1s ease;
-}
-
-body.bg-sea {
-  background: linear-gradient(135deg, #0077b6 0%, #00b4d8 50%, #90e0ef 100%);
-}
-
-body.bg-mountain {
-  background: linear-gradient(135deg, #2d3436 0%, #636e72 30%, #b2bec3 60%, #dfe6e9 100%);
-}
-
-body.bg-space {
-  background: linear-gradient(135deg, #0c0c0c 0%, #1a1a2e 50%, #16213e 100%);
-}
-
-body.bg-space::before {
-  content: '';
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background-image: 
-    radial-gradient(2px 2px at 20px 30px, white, transparent),
-    radial-gradient(2px 2px at 40px 70px, white, transparent),
-    radial-gradient(1px 1px at 90px 40px, white, transparent),
-    radial-gradient(2px 2px at 130px 80px, white, transparent),
-    radial-gradient(1px 1px at 160px 120px, white, transparent),
-    radial-gradient(2px 2px at 200px 50px, white, transparent),
-    radial-gradient(1px 1px at 250px 90px, white, transparent),
-    radial-gradient(2px 2px at 300px 130px, white, transparent),
-    radial-gradient(1px 1px at 350px 70px, white, transparent),
-    radial-gradient(2px 2px at 400px 110px, white, transparent);
-  background-repeat: repeat;
-  background-size: 450px 200px;
-  pointer-events: none;
-  z-index: -1;
 }
 
 .login-page {
@@ -276,37 +237,6 @@ main {
   width: 100%;
   height: 100%;
   object-fit: cover;
-}
-
-.bg-default {
-  background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
-}
-
-.bg-sea {
-  background: linear-gradient(135deg, #0077b6 0%, #00b4d8 50%, #90e0ef 100%);
-}
-
-.bg-mountain {
-  background: linear-gradient(135deg, #2d3436 0%, #636e72 30%, #b2bec3 60%, #dfe6e9 100%);
-}
-
-.bg-space {
-  background: linear-gradient(135deg, #0c0c0c 0%, #1a1a2e 50%, #16213e 100%);
-  position: relative;
-}
-
-.bg-space::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background-image: 
-    radial-gradient(2px 2px at 20px 30px, white, transparent),
-    radial-gradient(2px 2px at 40px 70px, white, transparent),
-    radial-gradient(1px 1px at 90px 40px, white, transparent),
-    radial-gradient(2px 2px at 60px 80px, white, transparent);
 }
 
 .bg-card h3 {

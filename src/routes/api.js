@@ -79,7 +79,7 @@ router.delete('/messages', async (req, res) => {
 router.get('/background', async (req, res) => {
   try {
     const result = await db.query('SELECT value FROM settings WHERE key = $1', ['background']);
-    res.json({ background: result.rows[0]?.value || 'default' });
+    res.json({ background: result.rows[0]?.value || 'dracula' });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
@@ -87,7 +87,7 @@ router.get('/background', async (req, res) => {
 
 router.post('/background', async (req, res) => {
   const { background } = req.body;
-  const validBackgrounds = ['default', 'sea', 'mountain', 'space'];
+  const validBackgrounds = ['dracula', 'frankestein', 'piramidi', 'vangogh'];
   
   if (!validBackgrounds.includes(background)) {
     return res.status(400).json({ error: 'Invalid background. Use: ' + validBackgrounds.join(', ') });

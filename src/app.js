@@ -79,7 +79,7 @@ async function initDatabase() {
       )
     `);
     await db.query(`
-      INSERT INTO settings (key, value) VALUES ('background', 'default')
+      INSERT INTO settings (key, value) VALUES ('background', 'dracula')
       ON CONFLICT (key) DO NOTHING
     `);
     console.log('Database initialized');
