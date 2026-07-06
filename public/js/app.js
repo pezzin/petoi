@@ -8,13 +8,15 @@ async function loadMessages() {
     const container = document.getElementById('messages-container');
     
     if (messages.length === 0) {
-      container.innerHTML = '<div class="message-empty">Nessun messaggio</div>';
-      lastMessageId = 0;
+      if (lastMessageId !== 0) {
+        container.innerHTML = '<div class="message-empty">Nessun messaggio</div>';
+        lastMessageId = 0;
+      }
       return;
     }
     
     const latestId = messages[0].id;
-    const hasNew = latestId > lastMessageId;
+    if (latestId === lastMessageId) return;
     lastMessageId = latestId;
     
     const html = messages.map((m, i) => 
@@ -28,11 +30,6 @@ async function loadMessages() {
     ).join('');
     
     container.innerHTML = html;
-    
-    if (hasNew && messages.length > 0) {
-      const latestText = messages[0].text;
-      console.log('Nuovo messaggio:', latestText);
-    }
   } catch (err) {
     console.error('Errore caricamento messaggi:', err);
   }
