@@ -38,19 +38,6 @@
         <label for="action">Action:</label>
         <select id="action">
           <option value="idle">Idle</option>
-          <option value="khi">Greeting (khi)</option>
-          <option value="khmp">Jump (khmp)</option>
-          <option value="kpshup">Pushup (kpshup)</option>
-          <option value="sit">Sit</option>
-          <option value="stand">Stand</option>
-          <option value="walk">Walk Forward</option>
-          <option value="back">Walk Backward</option>
-          <option value="left">Turn Left</option>
-          <option value="right">Turn Right</option>
-          <option value="pee">Pee</option>
-          <option value="stretch">Stretch</option>
-          <option value="check">Check Around</option>
-          <option value="zero">Zero Position</option>
         </select>
       </div>
       
@@ -64,6 +51,22 @@
       <p style="opacity: 0.7; margin-bottom: 1rem;">Set different actions for each robot</p>
       <div id="custom-actions"></div>
       <button onclick="setCustomActions()" class="btn" style="margin-top: 1rem;">Apply Custom Actions</button>
+    </section>
+    
+    <section class="commands-config-panel">
+      <h2>Configure Commands</h2>
+      <p style="opacity: 0.7; margin-bottom: 1rem;">Edit the PETOI command string for each action</p>
+      <table class="commands-table">
+        <thead>
+          <tr>
+            <th>Action Name</th>
+            <th>PETOI Command</th>
+            <th>Save</th>
+          </tr>
+        </thead>
+        <tbody id="commands-table-body">
+        </tbody>
+      </table>
     </section>
   </main>
   

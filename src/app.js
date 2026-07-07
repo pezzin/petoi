@@ -110,6 +110,38 @@ async function initDatabase() {
       INSERT INTO settings (key, value) VALUES ('poll_interval', '5000')
       ON CONFLICT (key) DO NOTHING
     `);
+    
+    await db.query(`
+      CREATE TABLE IF NOT EXISTS commands_config (
+        action VARCHAR(50) PRIMARY KEY,
+        command VARCHAR(100) NOT NULL,
+        display_name VARCHAR(100)
+      )
+    `);
+    
+    const defaultCommands = [
+      { action: 'khi', command: 'khi', display: 'Greeting' },
+      { action: 'kjmp', command: 'kjmp', display: 'Jump' },
+      { action: 'kpshup', command: 'kpshup', display: 'Pushup' },
+      { action: 'sit', command: 'sit', display: 'Sit' },
+      { action: 'stand', command: 'stand', display: 'Stand' },
+      { action: 'walk', command: 'walk', display: 'Walk Forward' },
+      { action: 'back', command: 'back', display: 'Walk Backward' },
+      { action: 'left', command: 'left', display: 'Turn Left' },
+      { action: 'right', command: 'right', display: 'Turn Right' },
+      { action: 'pee', command: 'pee', display: 'Pee' },
+      { action: 'stretch', command: 'stretch', display: 'Stretch' },
+      { action: 'check', command: 'check', display: 'Check Around' },
+      { action: 'zero', command: 'zero', display: 'Zero Position' }
+    ];
+    
+    for (const cmd of defaultCommands) {
+      await db.query(`
+        INSERT INTO commands_config (action, command, display_name) VALUES ($1, $2, $3)
+        ON CONFLICT (action) DO NOTHING
+      `, [cmd.action, cmd.command, cmd.display]);
+    }
+    
     const robotNames = [
       { id: 'BAFF', name: 'BAFF' },
       { id: '404E', name: '404E' },

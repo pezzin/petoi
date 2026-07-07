@@ -1,5 +1,76 @@
 let robots = [];
 let selectedRobots = new Set();
+let commandsConfig = [];
+
+async function loadCommandsConfig() {
+  try {
+    const res = await fetch('/api/dance/commands');
+    commandsConfig = await res.json();
+    renderCommandsTable();
+    updateActionSelect();
+    updateCustomActionSelects();
+  } catch (err) {
+    console.error('Error loading commands config:', err);
+  }
+}
+
+function renderCommandsTable() {
+  const tbody = document.getElementById('commands-table-body');
+  tbody.innerHTML = commandsConfig.map(cmd => `
+    <tr>
+      <td>${cmd.display_name}</td>
+      <td>
+        <input type="text" id="cmd-${cmd.action}" value="${cmd.command}" placeholder="PETOI command">
+      </td>
+      <td>
+        <button onclick="saveCommand('${cmd.action}')" class="btn-save">Save</button>
+      </td>
+    </tr>
+  `).join('');
+}
+
+function updateActionSelect() {
+  const select = document.getElementById('action');
+  select.innerHTML = '<option value="idle">Idle</option>' + 
+    commandsConfig.map(cmd => `<option value="${cmd.action}">${cmd.display_name} (${cmd.command})</option>`).join('');
+}
+
+function updateCustomActionSelects() {
+  if (robots.length === 0) return;
+  
+  const customContainer = document.getElementById('custom-actions');
+  customContainer.innerHTML = robots.map(r => {
+    const options = '<option value="idle">Idle</option>' + 
+      commandsConfig.map(cmd => `<option value="${cmd.action}" ${r.current_action === cmd.action ? 'selected' : ''}>${cmd.display_name} (${cmd.command})</option>`).join('');
+    
+    return `
+      <div class="custom-action-row">
+        <label>${r.name}:</label>
+        <select id="action-${r.id}">${options}</select>
+      </div>
+    `;
+  }).join('');
+}
+
+async function saveCommand(action) {
+  const input = document.getElementById(`cmd-${action}`);
+  const command = input.value;
+  const displayName = commandsConfig.find(c => c.action === action)?.display_name || action;
+  
+  try {
+    const res = await fetch(`/api/dance/commands/${action}`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ command, display_name: displayName })
+    });
+    const data = await res.json();
+    if (data.success) {
+      await loadCommandsConfig();
+    }
+  } catch (err) {
+    console.error('Error saving command:', err);
+  }
+}
 
 async function loadRobots() {
   try {
@@ -39,28 +110,7 @@ function updateRobotSelectors() {
     </label>
   `).join('');
   
-  const customContainer = document.getElementById('custom-actions');
-  customContainer.innerHTML = robots.map(r => `
-    <div class="custom-action-row">
-      <label>${r.name}:</label>
-      <select id="action-${r.id}">
-        <option value="idle" ${r.current_action === 'idle' ? 'selected' : ''}>Idle</option>
-        <option value="khi" ${r.current_action === 'khi' ? 'selected' : ''}>Greeting (khi)</option>
-        <option value="khmp" ${r.current_action === 'khmp' ? 'selected' : ''}>Jump (khmp)</option>
-        <option value="kpshup" ${r.current_action === 'kpshup' ? 'selected' : ''}>Pushup (kpshup)</option>
-        <option value="sit" ${r.current_action === 'sit' ? 'selected' : ''}>Sit</option>
-        <option value="stand" ${r.current_action === 'stand' ? 'selected' : ''}>Stand</option>
-        <option value="walk" ${r.current_action === 'walk' ? 'selected' : ''}>Walk</option>
-        <option value="back" ${r.current_action === 'back' ? 'selected' : ''}>Back</option>
-        <option value="left" ${r.current_action === 'left' ? 'selected' : ''}>Left</option>
-        <option value="right" ${r.current_action === 'right' ? 'selected' : ''}>Right</option>
-        <option value="pee" ${r.current_action === 'pee' ? 'selected' : ''}>Pee</option>
-        <option value="stretch" ${r.current_action === 'stretch' ? 'selected' : ''}>Stretch</option>
-        <option value="check" ${r.current_action === 'check' ? 'selected' : ''}>Check</option>
-        <option value="zero" ${r.current_action === 'zero' ? 'selected' : ''}>Zero</option>
-      </select>
-    </div>
-  `).join('');
+  updateCustomActionSelects();
 }
 
 function toggleRobot(id) {
@@ -162,74 +212,6 @@ async function clearActions() {
   }
 }
 
-async function saveChoreography() {
-  const name = document.getElementById('choreo-name').value;
-  const stepsText = document.getElementById('choreo-steps').value;
-  
-  if (!name) {
-    alert('Enter choreography name');
-    return;
-  }
-  
-  let steps;
-  try {
-    steps = JSON.parse(stepsText);
-  } catch (e) {
-    alert('Invalid JSON for steps');
-    return;
-  }
-  
-  try {
-    const res = await fetch(`/api/dance/choreography/${name}`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ steps })
-    });
-    const data = await res.json();
-    if (data.success) {
-      alert('Choreography saved!');
-      loadChoreographies();
-    }
-  } catch (err) {
-    console.error('Error saving choreography:', err);
-  }
-}
-
-async function loadChoreographies() {
-  try {
-    const res = await fetch('/api/dance/choreography/list');
-    const choreos = await res.json();
-    
-    const container = document.getElementById('choreo-list');
-    if (Object.keys(choreos).length === 0) {
-      container.innerHTML = '<p style="opacity: 0.6;">No saved choreographies</p>';
-      return;
-    }
-    
-    container.innerHTML = Object.entries(choreos).map(([name, steps]) => `
-      <div class="choreo-item">
-        <span>${name} (${steps.length} steps)</span>
-        <div>
-          <button onclick="deleteChoreo('${name}')" class="btn-small" style="background: #ef4444;">Delete</button>
-        </div>
-      </div>
-    `).join('');
-  } catch (err) {
-    console.error('Error loading choreographies:', err);
-  }
-}
-
-async function deleteChoreo(name) {
-  if (!confirm(`Delete choreography "${name}"?`)) return;
-  
-  try {
-    await fetch(`/api/dance/choreography/${name}`, { method: 'DELETE' });
-    loadChoreographies();
-  } catch (err) {
-    console.error('Error deleting choreography:', err);
-  }
-}
-
+loadCommandsConfig();
 loadRobots();
-loadChoreographies();
 setInterval(loadRobots, 3000);

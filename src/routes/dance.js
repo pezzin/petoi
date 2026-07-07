@@ -157,4 +157,58 @@ router.delete('/choreography/:name', async (req, res) => {
   }
 });
 
+router.get('/commands', async (req, res) => {
+  try {
+    const result = await db.query('SELECT * FROM commands_config ORDER BY display_name');
+    res.json(result.rows);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+router.post('/commands/:action', async (req, res) => {
+  const { action } = req.params;
+  const { command, display_name } = req.body;
+  
+  try {
+    await db.query(
+      'UPDATE commands_config SET command = $1, display_name = $2 WHERE action = $3',
+      [command, display_name, action]
+    );
+    res.json({ success: true });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+router.post('/commands', async (req, res) => {
+  const { action, command, display_name } = req.body;
+  
+  if (!action || !command) {
+    return res.status(400).json({ error: 'action and command are required' });
+  }
+  
+  try {
+    await db.query(
+      `INSERT INTO commands_config (action, command, display_name) VALUES ($1, $2, $3)
+       ON CONFLICT (action) DO UPDATE SET command = $2, display_name = $3`,
+      [action, command, display_name || action]
+    );
+    res.json({ success: true });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+router.delete('/commands/:action', async (req, res) => {
+  const { action } = req.params;
+  
+  try {
+    await db.query('DELETE FROM commands_config WHERE action = $1', [action]);
+    res.json({ success: true });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
 module.exports = router;
