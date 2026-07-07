@@ -45,16 +45,17 @@ function updateRobotSelectors() {
       <label>${r.name}:</label>
       <select id="action-${r.id}">
         <option value="idle" ${r.current_action === 'idle' ? 'selected' : ''}>Idle</option>
+        <option value="khi" ${r.current_action === 'khi' ? 'selected' : ''}>Greeting (khi)</option>
+        <option value="khmp" ${r.current_action === 'khmp' ? 'selected' : ''}>Jump (khmp)</option>
+        <option value="kpshup" ${r.current_action === 'kpshup' ? 'selected' : ''}>Pushup (kpshup)</option>
         <option value="sit" ${r.current_action === 'sit' ? 'selected' : ''}>Sit</option>
         <option value="stand" ${r.current_action === 'stand' ? 'selected' : ''}>Stand</option>
         <option value="walk" ${r.current_action === 'walk' ? 'selected' : ''}>Walk</option>
         <option value="back" ${r.current_action === 'back' ? 'selected' : ''}>Back</option>
         <option value="left" ${r.current_action === 'left' ? 'selected' : ''}>Left</option>
         <option value="right" ${r.current_action === 'right' ? 'selected' : ''}>Right</option>
-        <option value="pushup" ${r.current_action === 'pushup' ? 'selected' : ''}>Pushup</option>
         <option value="pee" ${r.current_action === 'pee' ? 'selected' : ''}>Pee</option>
         <option value="stretch" ${r.current_action === 'stretch' ? 'selected' : ''}>Stretch</option>
-        <option value="greeting" ${r.current_action === 'greeting' ? 'selected' : ''}>Greeting</option>
         <option value="check" ${r.current_action === 'check' ? 'selected' : ''}>Check</option>
         <option value="zero" ${r.current_action === 'zero' ? 'selected' : ''}>Zero</option>
       </select>
