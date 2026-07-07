@@ -94,6 +94,15 @@ async function initDatabase() {
       )
     `);
     await db.query(`
+      DO $$
+      BEGIN
+        IF NOT EXISTS (SELECT 1 FROM information_schema.columns 
+                       WHERE table_name = 'robots' AND column_name = 'current_action') THEN
+          ALTER TABLE robots ADD COLUMN current_action VARCHAR(100) DEFAULT 'idle';
+        END IF;
+      END $$;
+    `);
+    await db.query(`
       INSERT INTO settings (key, value) VALUES ('background', 'dracula')
       ON CONFLICT (key) DO NOTHING
     `);
@@ -101,11 +110,21 @@ async function initDatabase() {
       INSERT INTO settings (key, value) VALUES ('poll_interval', '5000')
       ON CONFLICT (key) DO NOTHING
     `);
-    for (let i = 1; i <= 7; i++) {
+    const robotNames = [
+      { id: 'BAFF', name: 'BAFF' },
+      { id: '404E', name: '404E' },
+      { id: 'petoi-3', name: 'PETOI 3' },
+      { id: 'petoi-4', name: 'PETOI 4' },
+      { id: 'petoi-5', name: 'PETOI 5' },
+      { id: 'petoi-6', name: 'PETOI 6' },
+      { id: 'petoi-7', name: 'PETOI 7' }
+    ];
+    
+    for (const robot of robotNames) {
       await db.query(`
         INSERT INTO robots (id, name, status, current_action) VALUES ($1, $2, 'offline', 'idle')
-        ON CONFLICT (id) DO NOTHING
-      `, [`petoi-${i}`, `PETOI ${i}`]);
+        ON CONFLICT (id) DO UPDATE SET name = EXCLUDED.name
+      `, [robot.id, robot.name]);
     }
     console.log('Database initialized');
   } catch (err) {
