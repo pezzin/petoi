@@ -15,15 +15,15 @@ async function loadRobots() {
 function renderRobots() {
   const container = document.getElementById('robots-list');
   container.innerHTML = robots.map(r => {
-    const isOnline = r.status === 'online' || (r.last_seen && Date.now() - new Date(r.last_seen) < 5000);
+    const isOnline = r.status === 'online' || (r.last_seen && Date.now() - new Date(r.last_seen) < 10000);
     const statusClass = isOnline ? 'online' : 'offline';
     const selectedClass = selectedRobots.has(r.id) ? 'selected' : '';
     
     return `
-      <div class="robot-card ${statusClass} ${selectedClass}" data-id="${r.id}">
+      <div class="robot-card ${statusClass} ${selectedClass}" data-id="${r.id}" onclick="toggleRobot('${r.id}')">
         <div class="robot-name">${r.name}</div>
         <div class="robot-status">${isOnline ? 'Online' : 'Offline'}</div>
-        ${r.pending_commands > 0 ? `<div class="robot-commands">${r.pending_commands} pending</div>` : ''}
+        <div class="robot-action">Action: ${r.current_action || 'idle'}</div>
       </div>
     `;
   }).join('');
@@ -38,6 +38,28 @@ function updateRobotSelectors() {
       ${r.name}
     </label>
   `).join('');
+  
+  const customContainer = document.getElementById('custom-actions');
+  customContainer.innerHTML = robots.map(r => `
+    <div class="custom-action-row">
+      <label>${r.name}:</label>
+      <select id="action-${r.id}">
+        <option value="idle" ${r.current_action === 'idle' ? 'selected' : ''}>Idle</option>
+        <option value="sit" ${r.current_action === 'sit' ? 'selected' : ''}>Sit</option>
+        <option value="stand" ${r.current_action === 'stand' ? 'selected' : ''}>Stand</option>
+        <option value="walk" ${r.current_action === 'walk' ? 'selected' : ''}>Walk</option>
+        <option value="back" ${r.current_action === 'back' ? 'selected' : ''}>Back</option>
+        <option value="left" ${r.current_action === 'left' ? 'selected' : ''}>Left</option>
+        <option value="right" ${r.current_action === 'right' ? 'selected' : ''}>Right</option>
+        <option value="pushup" ${r.current_action === 'pushup' ? 'selected' : ''}>Pushup</option>
+        <option value="pee" ${r.current_action === 'pee' ? 'selected' : ''}>Pee</option>
+        <option value="stretch" ${r.current_action === 'stretch' ? 'selected' : ''}>Stretch</option>
+        <option value="greeting" ${r.current_action === 'greeting' ? 'selected' : ''}>Greeting</option>
+        <option value="check" ${r.current_action === 'check' ? 'selected' : ''}>Check</option>
+        <option value="zero" ${r.current_action === 'zero' ? 'selected' : ''}>Zero</option>
+      </select>
+    </div>
+  `).join('');
 }
 
 function toggleRobot(id) {
@@ -47,6 +69,7 @@ function toggleRobot(id) {
     selectedRobots.add(id);
   }
   renderRobots();
+  updateRobotSelectors();
 }
 
 function selectAll() {
@@ -61,85 +84,80 @@ function selectNone() {
   renderRobots();
 }
 
-document.getElementById('command')?.addEventListener('change', (e) => {
-  const customGroup = document.getElementById('custom-command-group');
-  customGroup.style.display = e.target.value === 'custom' ? 'block' : 'none';
-});
-
-async function sendCommand() {
-  const robots = Array.from(selectedRobots);
-  if (robots.length === 0) {
+async function setAction() {
+  const selectedList = Array.from(selectedRobots);
+  if (selectedList.length === 0) {
     alert('Select at least one robot');
     return;
   }
   
-  const commandSelect = document.getElementById('command');
-  let command = commandSelect.value;
-  
-  if (command === 'custom') {
-    command = document.getElementById('custom-command').value;
-    if (!command) {
-      alert('Enter a custom command');
-      return;
-    }
-  }
-  
-  const params = document.getElementById('params').value;
+  const action = document.getElementById('action').value;
   
   try {
-    const res = await fetch('/api/dance/command', {
+    const res = await fetch('/api/dance/set-action', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ robots, command, params })
+      body: JSON.stringify({ robots: selectedList, action })
     });
     const data = await res.json();
     if (data.success) {
-      console.log('Command sent:', data);
       loadRobots();
     }
   } catch (err) {
-    console.error('Error sending command:', err);
+    console.error('Error setting action:', err);
   }
 }
 
-async function sendToAll() {
-  const commandSelect = document.getElementById('command');
-  let command = commandSelect.value;
-  
-  if (command === 'custom') {
-    command = document.getElementById('custom-command').value;
-    if (!command) {
-      alert('Enter a custom command');
-      return;
-    }
-  }
-  
-  const params = document.getElementById('params').value;
+async function setActionAll() {
+  const action = document.getElementById('action').value;
   
   try {
-    const res = await fetch('/api/dance/command/all', {
+    const res = await fetch('/api/dance/set-action/all', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ command, params })
+      body: JSON.stringify({ action })
     });
     const data = await res.json();
     if (data.success) {
-      console.log('Command sent to all:', data);
       loadRobots();
     }
   } catch (err) {
-    console.error('Error sending command:', err);
+    console.error('Error setting action:', err);
   }
 }
 
-async function clearCommands() {
-  if (!confirm('Clear all pending commands?')) return;
+async function setCustomActions() {
+  const actions = {};
+  robots.forEach(r => {
+    const select = document.getElementById(`action-${r.id}`);
+    if (select) {
+      actions[r.id] = select.value;
+    }
+  });
   
   try {
-    await fetch('/api/dance/commands', { method: 'DELETE' });
+    const res = await fetch('/api/dance/set-actions', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ actions })
+    });
+    const data = await res.json();
+    if (data.success) {
+      loadRobots();
+    }
+  } catch (err) {
+    console.error('Error setting custom actions:', err);
+  }
+}
+
+async function clearActions() {
+  if (!confirm('Reset all robots to idle?')) return;
+  
+  try {
+    await fetch('/api/dance/clear-actions', { method: 'POST' });
     loadRobots();
   } catch (err) {
-    console.error('Error clearing commands:', err);
+    console.error('Error clearing actions:', err);
   }
 }
 
@@ -191,27 +209,12 @@ async function loadChoreographies() {
       <div class="choreo-item">
         <span>${name} (${steps.length} steps)</span>
         <div>
-          <button onclick="executeChoreo('${name}')" class="btn-small">Execute</button>
           <button onclick="deleteChoreo('${name}')" class="btn-small" style="background: #ef4444;">Delete</button>
         </div>
       </div>
     `).join('');
   } catch (err) {
     console.error('Error loading choreographies:', err);
-  }
-}
-
-async function executeChoreo(name) {
-  try {
-    const res = await fetch(`/api/dance/choreography/${name}/execute`, {
-      method: 'POST'
-    });
-    const data = await res.json();
-    if (data.success) {
-      alert('Choreography started!');
-    }
-  } catch (err) {
-    console.error('Error executing choreography:', err);
   }
 }
 

@@ -5,9 +5,8 @@ const db = require('../config/database');
 router.get('/robots', async (req, res) => {
   try {
     const result = await db.query(`
-      SELECT r.*, 
-        (SELECT COUNT(*) FROM commands WHERE robot_id = r.id AND executed = FALSE) as pending_commands
-      FROM robots r ORDER BY r.id
+      SELECT id, name, status, last_seen, current_action
+      FROM robots ORDER BY id
     `);
     res.json(result.rows);
   } catch (err) {
@@ -15,8 +14,12 @@ router.get('/robots', async (req, res) => {
   }
 });
 
-router.get('/robot/:id/command', async (req, res) => {
-  const { id } = req.params;
+router.post('/action', async (req, res) => {
+  const { id } = req.body;
+  
+  if (!id) {
+    return res.status(400).json({ error: 'id is required' });
+  }
   
   try {
     await db.query(
@@ -25,95 +28,82 @@ router.get('/robot/:id/command', async (req, res) => {
     );
     
     const result = await db.query(
-      'SELECT * FROM commands WHERE robot_id = $1 AND executed = FALSE ORDER BY created_at ASC LIMIT 1',
+      'SELECT current_action FROM robots WHERE id = $1',
       [id]
     );
     
     if (result.rows.length === 0) {
-      return res.json({ command: null });
+      return res.status(404).json({ error: 'Robot not found' });
     }
     
-    const cmd = result.rows[0];
-    await db.query('UPDATE commands SET executed = TRUE WHERE id = $1', [cmd.id]);
-    
-    res.json({
-      command: cmd.command,
-      params: cmd.params,
-      command_id: cmd.id
-    });
+    res.json({ action: result.rows[0].current_action || 'idle' });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
 });
 
-router.post('/robot/:id/status', async (req, res) => {
-  const { id } = req.params;
-  const { status, current_command } = req.body;
-  
-  try {
-    await db.query(
-      'UPDATE robots SET status = $1, last_seen = NOW(), current_command = $2 WHERE id = $3',
-      [status || 'online', current_command || null, id]
-    );
-    res.json({ success: true });
-  } catch (err) {
-    res.status(500).json({ error: err.message });
-  }
-});
-
-router.post('/command', async (req, res) => {
-  const { robots, command, params } = req.body;
+router.post('/set-action', async (req, res) => {
+  const { robots, action } = req.body;
   
   if (!robots || !Array.isArray(robots) || robots.length === 0) {
     return res.status(400).json({ error: 'robots array is required' });
   }
   
-  if (!command) {
-    return res.status(400).json({ error: 'command is required' });
+  if (!action) {
+    return res.status(400).json({ error: 'action is required' });
   }
   
   try {
-    const inserted = [];
     for (const robotId of robots) {
-      const result = await db.query(
-        'INSERT INTO commands (robot_id, command, params) VALUES ($1, $2, $3) RETURNING *',
-        [robotId, command, params || null]
+      await db.query(
+        'UPDATE robots SET current_action = $1 WHERE id = $2',
+        [action, robotId]
       );
-      inserted.push(result.rows[0]);
     }
-    res.json({ success: true, commands: inserted });
+    res.json({ success: true, robots, action });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
 });
 
-router.post('/command/all', async (req, res) => {
-  const { command, params } = req.body;
+router.post('/set-action/all', async (req, res) => {
+  const { action } = req.body;
   
-  if (!command) {
-    return res.status(400).json({ error: 'command is required' });
+  if (!action) {
+    return res.status(400).json({ error: 'action is required' });
   }
   
   try {
-    const robots = await db.query('SELECT id FROM robots');
-    const inserted = [];
-    
-    for (const robot of robots.rows) {
-      const result = await db.query(
-        'INSERT INTO commands (robot_id, command, params) VALUES ($1, $2, $3) RETURNING *',
-        [robot.id, command, params || null]
-      );
-      inserted.push(result.rows[0]);
-    }
-    res.json({ success: true, commands: inserted });
+    await db.query('UPDATE robots SET current_action = $1', [action]);
+    res.json({ success: true, action });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
 });
 
-router.delete('/commands', async (req, res) => {
+router.post('/set-actions', async (req, res) => {
+  const { actions } = req.body;
+  
+  if (!actions || typeof actions !== 'object') {
+    return res.status(400).json({ error: 'actions object is required (e.g. {"petoi-1": "sit", "petoi-2": "stand"})' });
+  }
+  
   try {
-    await db.query('DELETE FROM commands WHERE executed = FALSE');
+    for (const [robotId, action] of Object.entries(actions)) {
+      await db.query(
+        'UPDATE robots SET current_action = $1 WHERE id = $2',
+        [action, robotId]
+      );
+    }
+    res.json({ success: true, actions });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+router.post('/clear-actions', async (req, res) => {
+  try {
+    await db.query("UPDATE robots SET current_action = 'idle'");
     res.json({ success: true });
   } catch (err) {
     res.status(500).json({ error: err.message });
@@ -151,26 +141,6 @@ router.post('/choreography/:name', async (req, res) => {
       [`choreo_${name}`, JSON.stringify(steps)]
     );
     res.json({ success: true, name, steps });
-  } catch (err) {
-    res.status(500).json({ error: err.message });
-  }
-});
-
-router.post('/choreography/:name/execute', async (req, res) => {
-  const { name } = req.params;
-  
-  try {
-    const result = await db.query(
-      'SELECT value FROM settings WHERE key = $1',
-      [`choreo_${name}`]
-    );
-    
-    if (result.rows.length === 0) {
-      return res.status(404).json({ error: 'Choreography not found' });
-    }
-    
-    const steps = JSON.parse(result.rows[0].value);
-    res.json({ success: true, message: 'Choreography queued', steps });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }

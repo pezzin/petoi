@@ -209,39 +209,34 @@ curl https://tuo-sito.onrender.com/api/data
 
 ### Dance Coordinator
 
-Sistema per coordinare fino a 7 robot PETOI tramite coda di comandi.
+Sistema per coordinare fino a 7 robot PETOI. Ogni robot fa polling per ottenere la sua azione corrente.
 
-#### I robot ottengono il prossimo comando
+#### Endpoint per i robot (polling)
 
-Ogni robot deve interrogare questo endpoint ogni 1-2 secondi:
+**URL:** `POST /api/dance/action`
 
-```bash
-curl https://tuo-sito.onrender.com/api/dance/robot/petoi-1/command
-```
-
-**Risposta (con comando):**
-```json
-{
-  "command": "sit",
-  "params": null,
-  "command_id": 42
-}
-```
-
-**Risposta (senza comandi):**
-```json
-{
-  "command": null
-}
-```
-
-#### Il robot aggiorna il suo stato
+Ogni robot invia il suo ID ogni 5 secondi (configurabile):
 
 ```bash
-curl -X POST https://tuo-sito.onrender.com/api/dance/robot/petoi-1/status \
+curl -X POST https://tuo-sito.onrender.com/api/dance/action \
   -H "Content-Type: application/json" \
-  -d '{"status": "online", "current_command": "executing walk"}'
+  -d '{"id": "petoi-1"}'
 ```
+
+**Risposta:**
+```json
+{
+  "action": "sit"
+}
+```
+
+Se non c'è un'azione impostata, ritorna `"idle"`.
+
+#### IDs dei robot
+
+I robot sono pre-configurati come:
+- `petoi-1`, `petoi-2`, `petoi-3`, `petoi-4`
+- `petoi-5`, `petoi-6`, `petoi-7`
 
 #### Lista di tutti i robot
 
@@ -249,25 +244,40 @@ curl -X POST https://tuo-sito.onrender.com/api/dance/robot/petoi-1/status \
 curl https://tuo-sito.onrender.com/api/dance/robots
 ```
 
-#### Invia comando a robot specifici
+#### Imposta azione per robot specifici
 
 ```bash
-curl -X POST https://tuo-sito.onrender.com/api/dance/command \
+curl -X POST https://tuo-sito.onrender.com/api/dance/set-action \
   -H "Content-Type: application/json" \
-  -d '{"robots": ["petoi-1", "petoi-2"], "command": "sit"}'
+  -d '{"robots": ["petoi-1", "petoi-2"], "action": "sit"}'
 ```
 
-#### Invia comando a tutti i robot
+#### Imposta azione per tutti i robot
 
 ```bash
-curl -X POST https://tuo-sito.onrender.com/api/dance/command/all \
-  -H "Content-Type: "application/json" \
-  -d '{"command": "stand"}'
+curl -X POST https://tuo-sito.onrender.com/api/dance/set-action/all \
+  -H "Content-Type: application/json" \
+  -d '{"action": "stand"}'
 ```
 
-**Comandi predefiniti:**
-| Comando | Descrizione |
-|---------|-------------|
+#### Imposta azioni personalizzate per ogni robot
+
+```bash
+curl -X POST https://tuo-sito.onrender.com/api/dance/set-actions \
+  -H "Content-Type: application/json" \
+  -d '{"actions": {"petoi-1": "sit", "petoi-2": "stand", "petoi-3": "walk"}}'
+```
+
+#### Resetta tutti a idle
+
+```bash
+curl -X POST https://tuo-sito.onrender.com/api/dance/clear-actions
+```
+
+**Azioni disponibili:**
+| Azione | Descrizione |
+|--------|-------------|
+| `idle` | Stato di riposo |
 | `sit` | Siediti |
 | `stand` | Alzati |
 | `walk` | Cammina avanti |
@@ -280,7 +290,6 @@ curl -X POST https://tuo-sito.onrender.com/api/dance/command/all \
 | `greeting` | Saluto |
 | `check` | Guarda intorno |
 | `zero` | Posizione zero |
-| `custom` | Comando personalizzato |
 
 ---
 

@@ -90,26 +90,20 @@ async function initDatabase() {
         name VARCHAR(100),
         status VARCHAR(50) DEFAULT 'offline',
         last_seen TIMESTAMP,
-        current_command TEXT
-      )
-    `);
-    await db.query(`
-      CREATE TABLE IF NOT EXISTS commands (
-        id SERIAL PRIMARY KEY,
-        robot_id VARCHAR(20) REFERENCES robots(id),
-        command VARCHAR(100) NOT NULL,
-        params TEXT,
-        executed BOOLEAN DEFAULT FALSE,
-        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        current_action VARCHAR(100) DEFAULT 'idle'
       )
     `);
     await db.query(`
       INSERT INTO settings (key, value) VALUES ('background', 'dracula')
       ON CONFLICT (key) DO NOTHING
     `);
+    await db.query(`
+      INSERT INTO settings (key, value) VALUES ('poll_interval', '5000')
+      ON CONFLICT (key) DO NOTHING
+    `);
     for (let i = 1; i <= 7; i++) {
       await db.query(`
-        INSERT INTO robots (id, name, status) VALUES ($1, $2, 'offline')
+        INSERT INTO robots (id, name, status, current_action) VALUES ($1, $2, 'offline', 'idle')
         ON CONFLICT (id) DO NOTHING
       `, [`petoi-${i}`, `PETOI ${i}`]);
     }
