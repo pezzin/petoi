@@ -214,7 +214,7 @@ router.delete('/commands/:action', async (req, res) => {
 router.get('/teams', async (req, res) => {
   try {
     const result = await db.query(
-      "SELECT key, value FROM settings WHERE key IN ('team_1', 'team_2')"
+      "SELECT key, value FROM settings WHERE key LIKE 'team_%' ORDER BY key"
     );
     const teams = {};
     result.rows.forEach(row => {
@@ -230,8 +230,9 @@ router.post('/teams/:teamId', async (req, res) => {
   const { teamId } = req.params;
   const { name } = req.body;
   
-  if (!['team_1', 'team_2'].includes(teamId)) {
-    return res.status(400).json({ error: 'Invalid team ID. Use team_1 or team_2' });
+  const validTeams = ['team_1', 'team_2', 'team_3', 'team_4', 'team_5', 'team_6'];
+  if (!validTeams.includes(teamId)) {
+    return res.status(400).json({ error: 'Invalid team ID. Use team_1 to team_6' });
   }
   
   if (!name) {

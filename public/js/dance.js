@@ -217,11 +217,11 @@ async function loadTeams() {
     const res = await fetch('/api/dance/teams');
     const teams = await res.json();
     
-    if (teams.team_1) {
-      document.getElementById('team-1').value = teams.team_1;
-    }
-    if (teams.team_2) {
-      document.getElementById('team-2').value = teams.team_2;
+    for (let i = 1; i <= 6; i++) {
+      const input = document.getElementById(`team-${i}`);
+      if (input && teams[`team_${i}`]) {
+        input.value = teams[`team_${i}`];
+      }
     }
   } catch (err) {
     console.error('Error loading teams:', err);
@@ -229,7 +229,8 @@ async function loadTeams() {
 }
 
 async function saveTeam(teamId) {
-  const inputId = teamId === 'team_1' ? 'team-1' : 'team-2';
+  const num = teamId.split('_')[1];
+  const inputId = `team-${num}`;
   const name = document.getElementById(inputId).value;
   
   try {

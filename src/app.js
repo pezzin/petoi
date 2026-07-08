@@ -162,14 +162,14 @@ async function initDatabase() {
       `, [robot.id, robot.name]);
     }
     
-    await db.query(`
-      INSERT INTO settings (key, value) VALUES ('team_1', 'Team 1')
-      ON CONFLICT (key) DO NOTHING
-    `);
-    await db.query(`
-      INSERT INTO settings (key, value) VALUES ('team_2', 'Team 2')
-      ON CONFLICT (key) DO NOTHING
-    `);
+    await db.query(`DELETE FROM robots WHERE id NOT IN ('2410', '2411', '418C', '3204')`);
+    
+    for (let i = 1; i <= 6; i++) {
+      await db.query(`
+        INSERT INTO settings (key, value) VALUES ($1, $2)
+        ON CONFLICT (key) DO NOTHING
+      `, [`team_${i}`, `Team ${i}`]);
+    }
     
     console.log('Database initialized');
   } catch (err) {
