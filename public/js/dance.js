@@ -92,12 +92,25 @@ function renderRobots() {
     
     return `
       <div class="robot-card ${statusClass} ${selectedClass}" data-id="${r.id}" onclick="toggleRobot('${r.id}')">
-        <div class="robot-name">${r.name}</div>
+        <div class="robot-name">${r.team_name || r.name}</div>
         <div class="robot-status">${isOnline ? 'Online' : 'Offline'}</div>
+        <div class="robot-id">ID: ${r.id}</div>
         <div class="robot-action">Action: ${r.current_action || 'idle'}</div>
       </div>
     `;
   }).join('');
+  
+  renderRobotTeamTable();
+}
+
+function renderRobotTeamTable() {
+  const tbody = document.getElementById('robot-team-body');
+  tbody.innerHTML = robots.map(r => `
+    <tr>
+      <td>${r.id}</td>
+      <td>${r.team_name || '-'}</td>
+    </tr>
+  `).join('');
 }
 
 function updateRobotSelectors() {
@@ -246,6 +259,17 @@ async function saveTeam(teamId) {
   } catch (err) {
     console.error('Error saving team:', err);
   }
+}
+
+async function saveAllTeams() {
+  for (let i = 1; i <= 6; i++) {
+    const input = document.getElementById(`team-${i}`);
+    if (input) {
+      await saveTeam(`team_${i}`);
+    }
+  }
+  alert('All teams saved!');
+  loadRobots();
 }
 
 loadCommandsConfig();

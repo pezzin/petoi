@@ -106,6 +106,14 @@ async function initDatabase() {
                        WHERE table_name = 'robots' AND column_name = 'current_action') THEN
           ALTER TABLE robots ADD COLUMN current_action VARCHAR(100) DEFAULT 'idle';
         END IF;
+        IF NOT EXISTS (SELECT 1 FROM information_schema.columns 
+                       WHERE table_name = 'robots' AND column_name = 'team_id') THEN
+          ALTER TABLE robots ADD COLUMN team_id VARCHAR(20);
+        END IF;
+        IF NOT EXISTS (SELECT 1 FROM information_schema.columns 
+                       WHERE table_name = 'robots' AND column_name = 'team_name') THEN
+          ALTER TABLE robots ADD COLUMN team_name VARCHAR(100);
+        END IF;
       END $$;
     `);
     await db.query(`
@@ -149,28 +157,38 @@ async function initDatabase() {
     }
     
     const robotNames = [
-      { id: '2410', name: '2410' },
-      { id: '2411', name: '2411' },
-      { id: '418C', name: '418C' },
-      { id: '3204', name: '3204' },
-      { id: '404E', name: '404E' },
-      { id: 'BAFF', name: 'BAFF' }
+      { id: '2410', name: '2410', team_id: 'team_5', team_name: 'Newton' },
+      { id: '2411', name: '2411', team_id: 'team_6', team_name: 'Piccolo Principe' },
+      { id: '418C', name: '418C', team_id: 'team_1', team_name: 'Napoleone' },
+      { id: '3204', name: '3204', team_id: 'team_4', team_name: 'Colombo' },
+      { id: '404E', name: '404E', team_id: 'team_2', team_name: 'Minotauro' },
+      { id: 'BAFF', name: 'BAFF', team_id: 'team_3', team_name: 'Achille' }
     ];
     
     for (const robot of robotNames) {
       await db.query(`
-        INSERT INTO robots (id, name, status, current_action) VALUES ($1, $2, 'offline', 'idle')
-        ON CONFLICT (id) DO UPDATE SET name = EXCLUDED.name
-      `, [robot.id, robot.name]);
+        INSERT INTO robots (id, name, status, current_action, team_id, team_name) 
+        VALUES ($1, $2, 'offline', 'idle', $3, $4)
+        ON CONFLICT (id) DO UPDATE SET name = EXCLUDED.name, team_id = EXCLUDED.team_id, team_name = EXCLUDED.team_name
+      `, [robot.id, robot.name, robot.team_id, robot.team_name]);
     }
     
     await db.query(`DELETE FROM robots WHERE id NOT IN ('2410', '2411', '418C', '3204', '404E', 'BAFF')`);
     
-    for (let i = 1; i <= 6; i++) {
+    const teamNames = [
+      { id: 'team_1', name: 'Napoleone' },
+      { id: 'team_2', name: 'Minotauro' },
+      { id: 'team_3', name: 'Achille' },
+      { id: 'team_4', name: 'Colombo' },
+      { id: 'team_5', name: 'Newton' },
+      { id: 'team_6', name: 'Piccolo Principe' }
+    ];
+    
+    for (const team of teamNames) {
       await db.query(`
         INSERT INTO settings (key, value) VALUES ($1, $2)
-        ON CONFLICT (key) DO NOTHING
-      `, [`team_${i}`, `Team ${i}`]);
+        ON CONFLICT (key) DO UPDATE SET value = EXCLUDED.value
+      `, [team.id, team.name]);
     }
     
     console.log('Database initialized');

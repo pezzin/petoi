@@ -55,6 +55,12 @@
   opacity: 0.8;
 }
 
+.robot-id {
+  font-size: 0.75rem;
+  opacity: 0.6;
+  margin-top: 0.25rem;
+}
+
 .robot-action {
   font-size: 0.8rem;
   margin-top: 0.5rem;
@@ -248,6 +254,24 @@
 .team-row input:focus {
   outline: none;
   border-color: #e94560;
+}
+
+.teams-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 1rem;
+}
+
+.teams-table th,
+.teams-table td {
+  padding: 0.75rem;
+  text-align: left;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.teams-table th {
+  font-weight: 600;
+  opacity: 0.8;
 }
 
 @media (max-width: 768px) {
