@@ -217,6 +217,39 @@
   background: #22c55e;
 }
 
+.teams-panel {
+  background: rgba(255, 255, 255, 0.1);
+  padding: 1.5rem;
+  border-radius: 12px;
+}
+
+.team-row {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin-top: 1rem;
+}
+
+.team-row label {
+  min-width: 60px;
+  font-weight: 500;
+}
+
+.team-row input {
+  flex: 1;
+  padding: 0.5rem;
+  background: rgba(0, 0, 0, 0.3);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 4px;
+  color: #eee;
+  font-size: 1rem;
+}
+
+.team-row input:focus {
+  outline: none;
+  border-color: #e94560;
+}
+
 @media (max-width: 768px) {
   .dance-container {
     grid-template-columns: 1fr;

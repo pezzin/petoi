@@ -54,6 +54,20 @@
       <button onclick="setCustomActions()" class="btn" style="margin-top: 1rem;">Apply Custom Actions</button>
     </section>
     
+    <section class="teams-panel">
+      <h2>Team Names</h2>
+      <div class="team-row">
+        <label for="team-1">Team 1:</label>
+        <input type="text" id="team-1" placeholder="Team 1 name">
+        <button onclick="saveTeam('team_1')" class="btn-small">Save</button>
+      </div>
+      <div class="team-row">
+        <label for="team-2">Team 2:</label>
+        <input type="text" id="team-2" placeholder="Team 2 name">
+        <button onclick="saveTeam('team_2')" class="btn-small">Save</button>
+      </div>
+    </section>
+    
     <section class="commands-config-panel">
       <h2>Configure Commands</h2>
       <p style="opacity: 0.7; margin-bottom: 1rem;">Edit the PETOI command string for each action</p>

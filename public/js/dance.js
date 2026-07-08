@@ -212,6 +212,42 @@ async function clearActions() {
   }
 }
 
+async function loadTeams() {
+  try {
+    const res = await fetch('/api/dance/teams');
+    const teams = await res.json();
+    
+    if (teams.team_1) {
+      document.getElementById('team-1').value = teams.team_1;
+    }
+    if (teams.team_2) {
+      document.getElementById('team-2').value = teams.team_2;
+    }
+  } catch (err) {
+    console.error('Error loading teams:', err);
+  }
+}
+
+async function saveTeam(teamId) {
+  const inputId = teamId === 'team_1' ? 'team-1' : 'team-2';
+  const name = document.getElementById(inputId).value;
+  
+  try {
+    const res = await fetch(`/api/dance/teams/${teamId}`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ name })
+    });
+    const data = await res.json();
+    if (data.success) {
+      console.log('Team saved:', teamId, name);
+    }
+  } catch (err) {
+    console.error('Error saving team:', err);
+  }
+}
+
 loadCommandsConfig();
 loadRobots();
+loadTeams();
 setInterval(loadRobots, 3000);

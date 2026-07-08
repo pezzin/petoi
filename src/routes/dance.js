@@ -211,4 +211,42 @@ router.delete('/commands/:action', async (req, res) => {
   }
 });
 
+router.get('/teams', async (req, res) => {
+  try {
+    const result = await db.query(
+      "SELECT key, value FROM settings WHERE key IN ('team_1', 'team_2')"
+    );
+    const teams = {};
+    result.rows.forEach(row => {
+      teams[row.key] = row.value;
+    });
+    res.json(teams);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+router.post('/teams/:teamId', async (req, res) => {
+  const { teamId } = req.params;
+  const { name } = req.body;
+  
+  if (!['team_1', 'team_2'].includes(teamId)) {
+    return res.status(400).json({ error: 'Invalid team ID. Use team_1 or team_2' });
+  }
+  
+  if (!name) {
+    return res.status(400).json({ error: 'name is required' });
+  }
+  
+  try {
+    await db.query(
+      'INSERT INTO settings (key, value) VALUES ($1, $2) ON CONFLICT (key) DO UPDATE SET value = $2',
+      [teamId, name]
+    );
+    res.json({ success: true, teamId, name });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
 module.exports = router;

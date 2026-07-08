@@ -149,13 +149,10 @@ async function initDatabase() {
     }
     
     const robotNames = [
-      { id: 'BAFF', name: 'BAFF' },
-      { id: '404E', name: '404E' },
-      { id: 'petoi-3', name: 'PETOI 3' },
-      { id: 'petoi-4', name: 'PETOI 4' },
-      { id: 'petoi-5', name: 'PETOI 5' },
-      { id: 'petoi-6', name: 'PETOI 6' },
-      { id: 'petoi-7', name: 'PETOI 7' }
+      { id: '2410', name: '2410' },
+      { id: '2411', name: '2411' },
+      { id: '418C', name: '418C' },
+      { id: '3204', name: '3204' }
     ];
     
     for (const robot of robotNames) {
@@ -164,6 +161,16 @@ async function initDatabase() {
         ON CONFLICT (id) DO UPDATE SET name = EXCLUDED.name
       `, [robot.id, robot.name]);
     }
+    
+    await db.query(`
+      INSERT INTO settings (key, value) VALUES ('team_1', 'Team 1')
+      ON CONFLICT (key) DO NOTHING
+    `);
+    await db.query(`
+      INSERT INTO settings (key, value) VALUES ('team_2', 'Team 2')
+      ON CONFLICT (key) DO NOTHING
+    `);
+    
     console.log('Database initialized');
   } catch (err) {
     console.error('Database init error:', err.message);
