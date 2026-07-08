@@ -152,7 +152,8 @@ async function initDatabase() {
       { id: '2410', name: '2410' },
       { id: '2411', name: '2411' },
       { id: '418C', name: '418C' },
-      { id: '3204', name: '3204' }
+      { id: '3204', name: '3204' },
+      { id: '404E', name: '404E' }
     ];
     
     for (const robot of robotNames) {
@@ -162,7 +163,7 @@ async function initDatabase() {
       `, [robot.id, robot.name]);
     }
     
-    await db.query(`DELETE FROM robots WHERE id NOT IN ('2410', '2411', '418C', '3204')`);
+    await db.query(`DELETE FROM robots WHERE id NOT IN ('2410', '2411', '418C', '3204', '404E')`);
     
     for (let i = 1; i <= 6; i++) {
       await db.query(`
