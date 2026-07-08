@@ -7,6 +7,7 @@ const { requireAuth } = require('./middleware/auth');
 const authRoutes = require('./routes/auth');
 const apiRoutes = require('./routes/api');
 const danceRoutes = require('./routes/dance');
+const streamRoutes = require('./routes/stream');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -34,6 +35,7 @@ app.set('views', path.join(__dirname, '../views'));
 app.use('/', authRoutes);
 app.use('/api', apiRoutes);
 app.use('/api/dance', danceRoutes);
+app.use('/api/stream', streamRoutes);
 
 app.get('/', requireAuth, (req, res) => {
   res.render('dashboard');
@@ -49,6 +51,10 @@ app.get('/sfondo', (req, res) => {
 
 app.get('/dance', requireAuth, (req, res) => {
   res.render('dance');
+});
+
+app.get('/stream', (req, res) => {
+  res.render('stream');
 });
 
 app.get('/health', async (req, res) => {
